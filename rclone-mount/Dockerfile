@@ -1,4 +1,4 @@
-ARG IMAGE_VERSION="latest"(removed to always pull the latest rclone version)
+# ARG IMAGE_VERSION (removed to always pull the latest rclone version)
 ARG OVERLAY_VERSION="v2.2.0.3"
 ARG OVERLAY_ARCH="aarch64"
 ARG OVERLAY_KEY="6101B2783B2FD161"
@@ -14,7 +14,7 @@ ENV GOPATH="/go" \
 RUN apk add --no-cache --update ca-certificates go git \
     && git clone https://github.com/rclone/rclone.git \
     && cd rclone \
-    && git checkout tags/${IMAGE_VERSION} \
+    && git checkout master \
     && go build
 
 # Image
