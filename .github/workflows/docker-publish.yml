@@ -40,6 +40,16 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest
+            type=raw,value=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=${{ env.IMAGE_NAME }}
+            org.opencontainers.image.description=Multi-arch Docker image build
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.repository }}
 
       # Step 5: Build and push multi-arch Docker image
       - name: Build and push Docker image
@@ -47,7 +57,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./rclone-mount # Adjust if the Dockerfile is in a different directory
-          push: true # Only push images, not just build
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
