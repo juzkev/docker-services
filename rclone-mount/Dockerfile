@@ -11,10 +11,12 @@ WORKDIR /go/src/github.com/rclone/rclone/
 ENV GOPATH="/go" \
     GO111MODULE="on"
 
+ARG TARGETPLATFORM
 RUN apk add --no-cache --update ca-certificates go git \
     && git clone https://github.com/rclone/rclone.git \
     && cd rclone \
     && git checkout master \
+    && if [ "$TARGETPLATFORM" = "linux/arm64" ]; then GOARCH=arm64; else GOARCH=amd64; fi \
     && go build
 
 # Image
