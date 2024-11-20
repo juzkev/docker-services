@@ -11,8 +11,8 @@ WORKDIR /go/src/github.com/rclone/rclone/
 ENV GOPATH="/go" \
     GO111MODULE="on"
 
-RUN apk add --no-cache --update ca-certificates git \
-    && git clone https://github.com/rclone/rclone.git . \
+RUN apk add --no-cache --update ca-certificates go git \
+    && git clone https://github.com/rclone/rclone.git \
     && go build
 
 # Image
