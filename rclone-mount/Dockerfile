@@ -33,7 +33,7 @@ ENV DEBUG="false" \
     MountCommands="--allow-other --allow-non-empty" \
     UnmountCommands="-u -z"
 
-COPY --from=builder /go/src/github.com/rclone/rclone/rclone /usr/local/sbin/
+COPY --from=builder /go/src/github.com/rclone/rclone/rclone/rclone /usr/local/sbin/
 
 RUN apk --no-cache upgrade \
     && apk add --no-cache --update ca-certificates fuse3 fuse fuse-dev curl gnupg \
