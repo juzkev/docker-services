@@ -2,7 +2,7 @@
 ARG OVERLAY_VERSION="v2.2.0.3"
 ARG OVERLAY_ARCH="aarch64"
 ARG OVERLAY_KEY="6101B2783B2FD161"
-
+ARG TARGETPLATFORM="linux/arm64"
 # Builder
 FROM --platform=$BUILDPLATFORM golang:alpine AS builder
 
@@ -11,7 +11,6 @@ WORKDIR /go/src/github.com/rclone/rclone/
 ENV GOPATH="/go" \
     GO111MODULE="on"
 
-ARG TARGETPLATFORM
 RUN apk add --no-cache --update ca-certificates go git \
     && git clone https://github.com/rclone/rclone.git \
     && cd rclone \
