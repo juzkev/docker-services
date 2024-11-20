@@ -1,28 +1,22 @@
-ARG IMAGE_VERSION="v1.62.2"
+# ARG IMAGE_VERSION (removed to always pull the latest rclone version)
 ARG OVERLAY_VERSION="v2.2.0.3"
 ARG OVERLAY_ARCH="aarch64"
 ARG OVERLAY_KEY="6101B2783B2FD161"
 
-
 # Builder
-FROM golang:alpine AS builder
-
-ARG IMAGE_VERSION
+FROM --platform=$BUILDPLATFORM golang:alpine AS builder
 
 WORKDIR /go/src/github.com/rclone/rclone/
 
 ENV GOPATH="/go" \
     GO111MODULE="on"
 
-RUN apk add --no-cache --update ca-certificates go git \
-    && git clone https://github.com/rclone/rclone.git \
-    && cd rclone \
-    && git checkout tags/${IMAGE_VERSION} \
+RUN apk add --no-cache --update ca-certificates git \
+    && git clone https://github.com/rclone/rclone.git . \
     && go build
 
-
 # Image
-FROM alpine:latest
+FROM --platform=$TARGETPLATFORM alpine:latest
 
 ARG OVERLAY_VERSION
 ARG OVERLAY_ARCH
@@ -37,7 +31,7 @@ ENV DEBUG="false" \
     MountCommands="--allow-other --allow-non-empty" \
     UnmountCommands="-u -z"
 
-COPY --from=builder /go/src/github.com/rclone/rclone/rclone/rclone /usr/local/sbin/
+COPY --from=builder /go/src/github.com/rclone/rclone/rclone /usr/local/sbin/
 
 RUN apk --no-cache upgrade \
     && apk add --no-cache --update ca-certificates fuse3 fuse fuse-dev curl gnupg \
@@ -46,7 +40,7 @@ RUN apk --no-cache upgrade \
     "https://github.com/just-containers/s6-overlay/releases/download/${OVERLAY_VERSION}/s6-overlay-${OVERLAY_ARCH}.tar.gz" \
     && curl -o /tmp/s6-overlay.tar.gz.sig -L \
     "https://github.com/just-containers/s6-overlay/releases/download/${OVERLAY_VERSION}/s6-overlay-${OVERLAY_ARCH}.tar.gz.sig" \
-    && gpg --keyserver pgp.surfnet.nl --recv-keys ${OVERLAY_KEY} \
+    && gpg --keyserver keyserver.ubuntu.com --recv-keys ${OVERLAY_KEY} \
     && gpg --verify /tmp/s6-overlay.tar.gz.sig /tmp/s6-overlay.tar.gz \
     && tar xzf /tmp/s6-overlay.tar.gz -C / \
     && apk del curl gnupg \
@@ -58,7 +52,6 @@ VOLUME ["/mnt"]
 
 ENTRYPOINT ["/init"]
 
-# Use this docker Options in run
-# --cap-add SYS_ADMIN --device /dev/fuse --security-opt apparmor:unconfined
-# -v /path/to/config/.rclone.conf:/config/.rclone.conf
-# -v /mnt/mediaefs:/mnt/mediaefs:shared
+# Multi-architecture support
+# Use the `docker buildx` command for building multi-architecture images:
+# docker buildx build --platform linux/amd64,linux/arm64 -t your-image-name:tag .
